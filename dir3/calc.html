@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <title>Document</title>
+</head>
+<body>
+
+  <div class="container shadow-lg p-3 mb-2 bg-white rounded">
+    <h2>Калькулятор зубо-фрейзерного станка</h2>
+    <!-- Параметры -->
+    <div class="border border-dark p-1 mt-3">
+        <h4>Параметры:</h4>
+        <div class="m-2">
+          <div class="row">
+
+            <div class="col-sm-2">
+              <label for="input_syrie_distance"><b>P</b> Параметр станка</label>
+              <input type="text" class="calc form-control" id="input_param_p"
+              aria-describedby="input_syrie_distanceHelp" oninput="calc_aim_res()" tabindex="1">
+            </div>
+            <div class="col-sm-2">
+              <label for="input_syrie_distance"><b>K</b> Число заходов</label>
+              <input type="text" class="calc form-control" id="input_param_k"
+              aria-describedby="input_syrie_distanceHelp" oninput="calc_aim_res()" tabindex="2">
+            </div>
+            <div class="col-sm-3">
+              <label for="input_syrie_distance"><b>M</b> Модуль нарезаемого колеса</label>
+              <input type="text" class="calc form-control" id="input_param_m"
+              aria-describedby="input_syrie_distanceHelp" oninput="calc_aim_res()" tabindex="3">
+            </div>
+            <div class="col-sm-2">
+              <label for="input_syrie_distance"><b>B</b> Угол наклона</label>
+              <input type="text" class="calc form-control" id="input_param_b"
+              aria-describedby="input_syrie_distanceHelp" oninput="calc_aim_res()" tabindex="4">
+            </div>
+            <div class="col-sm-3">
+              <label for="input_syrie_distance"><b>U</b> Целевое значение</label>
+              <input type="text"  class="calc form-control" id="input_aim_result"
+               aria-describedby="input_syrie_distanceHelp" placeholder="Целевое значение">
+            </div>
+
+            <br>
+            <div class="col-sm-5">
+              <label for="input_productivity"><b>S</b> Список значений</label>
+              <textarea type="text"  class="calc form-control" id="input_list"
+                aria-describedby="input_syrie_angleHelp" rows="5" tabindex="5"></textarea>
+            </div>
+
+            <div class="col-sm-7">
+              <label for="input_syrie_angle"><b>R</b> Результат:</label>
+              <textarea type="text"  class="calc form-control" id="input_calc_result"
+                aria-describedby="input_syrie_angleHelp" rows="10" ></textarea>
+            </div>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-end">
+            <button type="submit" id="compute_btn" class="btn btn-primary mb-2" tabindex="6">Расчитать</button>
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript">
+        var op_counter = 0;
+        var min = 25;
+        var max = 100;
+        var allowed_to_compute = true;
+
+        function calc_aim_res() {
+        var param_p = parseFloat($("#input_param_p").val());
+        var param_k = parseInt($("#input_param_k").val());
+        var param_b = parseFloat($("#input_param_b").val());
+        var param_m = parseFloat($("#input_param_m").val());
+
+        var aim_result = (param_p*Math.sin(param_b*Math.PI/180))/(param_m*param_k);
+        $("#input_aim_result").val(aim_result);
+
+    }
+    var inputs = document.querySelectorAll("input,textarea,select");
+for (var i = 0 ; i < inputs.length; i++) {
+   inputs[i].addEventListener("keypress", function(e){
+      if (e.key === 'Enter') {
+         e.preventDefault();
+         var nextInput = document.querySelectorAll('[tabIndex="' + (this.tabIndex + 1) + '"]');
+         if (nextInput.length === 0) {
+            nextInput = document.querySelectorAll('[tabIndex="1"]');
+         }
+         nextInput[0].focus();
+      }
+
+   })
+}
+
+    // Старая версия, учитывает порядок
+  /*
+    function combinations(numArr, choose, callback) {
+       var n = numArr.length;
+       var c = [];
+       var inner = function(start, choose_) {
+         if (choose_ == 0) {
+           callback(c);
+         } else {
+           for (var i = start; i <= n - choose_; ++i) {
+             c.push(numArr[i]);
+             inner(i + 1, choose_ - 1);
+             c.pop();
+           }
+         }
+       }
+       inner(0, choose);
+     }
+
+     combinations( array, 4,
+     function output(arr) {
+           var error_rate = Math.abs(arr[0]/arr[1]*arr[2]/arr[3]-aim_result);
+           if(error_rate<0.01){
+             calc_results.push([arr[0],arr[1],arr[2],arr[3]," ---------- ",error_rate].join());
+           }
+         });
+       */
+
+     // Новая версия, не учитывает порядок чисел для комбинации, увеличивая возможности
+     function printPermutations(array, k){
+       var m=[];
+       var combinations = [];
+       var indices = [];
+       var len=array.length;
+       function run(level){
+         for(var i=0; i < len; i++){
+         if(!indices[i]){
+           indices[i] = true;
+         combinations[level] = array[i];
+         op_counter+=1;
+         if(level < k - 1){
+           run(level + 1, i + 1);
+         } else {
+           m.push(([]).concat(combinations));
+         }
+         indices[i] = false;
+         }
+       }
+       }
+       run(0);
+       return m;
+     }
+    // data = ['46','43','25','35','45','33','36','33'];
+      $("#compute_btn").click(function(){
+        var button = this;
+        button.disabled = true;
+        setTimeout(function() {
+           button.disabled = false;
+        }, 1000);
+
+        var by_error_rate_sort_array=[], calc_results=[];
+        var aim_result = parseFloat($("#input_aim_result").val());
+        var array = ($("#input_list").val().replace(/\s+/g, '')).split(",");
+        array.forEach((item) => {
+          if (parseInt(item) < min || parseInt(item) > max) {
+            allowed_to_compute = false;
+          }
+        });
+        if(allowed_to_compute == true){
+        var cur_arr = printPermutations(array, 4);
+        cur_arr.forEach((arr, i) => {
+          var error_rate = Math.abs(arr[0]/arr[1]*arr[2]/arr[3]-aim_result);
+          if(error_rate<0.01){
+            calc_results.push([arr[0],arr[1],arr[2],arr[3]," ---------- ",error_rate].join());
+          }
+        });
+
+        var calc_results_sorted = calc_results.filter((item, index) => { return calc_results.indexOf(item) == index });
+        calc_results_sorted.sort(function(a, b){return (a.split(","))[5]-(b.split(","))[5]});
+        $("#input_calc_result").val((calc_results_sorted.slice(0,100)).join("\n"));
+
+      }
+      else {
+        $("#input_calc_result").val("Количество зубиков не может быть меньше 25 или больше 100");
+        allowed_to_compute = true;
+      }
+      console.log(op_counter);
+      op_counter = 0;
+      });
+    /* test: 20,30,10,50,60,10,2  */
+      </script>
+
+</div>
+
+</body>
+</html>
